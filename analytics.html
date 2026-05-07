@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据分析 - 智能仓储系统</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .analytics-container {
+      padding: 24px 0;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .chart-panel {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .chart-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chart-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-body {
+      padding: 24px;
+      min-height: 300px;
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      height: 250px;
+      padding: 20px 0;
+      border-bottom: 2px solid var(--border-color);
+      position: relative;
+    }
+
+    .bar-chart::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      border-top: 1px dashed var(--border-color);
+    }
+
+    .bar-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      max-width: 80px;
+    }
+
+    .bar {
+      width: 100%;
+      max-width: 50px;
+      border-radius: 6px 6px 0 0;
+      transition: var(--transition);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .bar:hover {
+      filter: brightness(1.2);
+      transform: scaleY(1.05);
+      transform-origin: bottom;
+    }
+
+    .bar-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .bar-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 8px;
+    }
+
+    .pie-chart-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      height: 250px;
+      gap: 32px;
+    }
+
+    .pie-chart {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      position: relative;
+      background: conic-gradient(
+        #f59e0b 0deg 108deg,
+        #10b981 108deg 180deg,
+        #3b82f6 180deg 252deg,
+        #a855f7 252deg 306deg,
+        #64748b 306deg 360deg
+      );
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .pie-chart::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px;
+      height: 80px;
+      background: var(--bg-card);
+      border-radius: 50%;
+    }
+
+    .pie-chart::after {
+      content: '总计';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .pie-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .legend-item:hover {
+      background: var(--bg-surface);
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    .legend-label {
+      font-size: 14px;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .legend-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .trend-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .trend-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg-surface);
+      border-radius: 8px;
+      transition: var(--transition);
+    }
+
+    .trend-item:hover {
+      background: rgba(245, 158, 11, 0.05);
+      transform: translateX(4px);
+    }
+
+    .trend-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .trend-icon.up { background: rgba(16, 185, 129, 0.15); }
+    .trend-icon.down { background: rgba(239, 68, 68, 0.15); }
+
+    .trend-content {
+      flex: 1;
+    }
+
+    .trend-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .trend-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .trend-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .trend-value.positive { color: var(--success); }
+    .trend-value.negative { color: var(--warning); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+    }
+
+    .stat-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .stat-change {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .stat-change.positive { color: var(--success); }
+    .stat-change.negative { color: var(--warning); }
+
+    .line-chart-container {
+      position: relative;
+      height: 250px;
+      padding: 20px 0;
+    }
+
+    .line-chart {
+      width: 100%;
+      height: 100%;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      background: var(--bg-dark);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      padding: 12px 16px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 100;
+      font-size: 13px;
+    }
+
+    .chart-tooltip.visible {
+      opacity: 1;
+    }
+
+    .table-panel {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      margin-top: 32px;
+    }
+
+    .table-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .top-products-table {
+      width: 100%;
+    }
+
+    .top-products-table th {
+      text-align: left;
+      padding: 14px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .top-products-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+    }
+
+    .top-products-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .rank-badge.gold { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .rank-badge.silver { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+    .rank-badge.bronze { background: rgba(180, 83, 9, 0.2); color: #b45309; }
+    .rank-badge.normal { background: var(--bg-surface); color: var(--text-secondary); }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--bg-surface);
+      border-radius: 4px;
+      overflow: hidden;
+      width: 120px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    @media (max-width: 1024px) {
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .pie-chart-container {
+        flex-direction: column;
+        height: auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pie-chart {
+        width: 160px;
+        height: 160px;
+      }
+
+      .pie-chart::before {
+        width: 60px;
+        height: 60px;
+      }
+    }
+
+    @keyframes growBar {
+      from {
+        transform: scaleY(0);
+      }
+      to {
+        transform: scaleY(1);
+      }
+    }
+
+    .bar {
+      animation: growBar 0.6s ease-out forwards;
+      transform-origin: bottom;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="app-container">
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-icon">🏭</div>
+          <span class="logo-text">Smart Warehouse</span>
+        </div>
+
+        <nav>
+          <ul class="nav-menu">
+            <li><a class="nav-item" href="index.html" data-page="dashboard">仪表盘</a></li>
+            <li><a class="nav-item" href="index.html" data-page="inventory">库存管理</a></li>
+            <li><a class="nav-item active" data-page="analytics">数据分析</a></li>
+            <li><a class="nav-item" href="settings.html" data-page="settings">系统设置</a></li>
+          </ul>
+        </nav>
+
+        <div class="user-info">
+          <div class="user-avatar">张</div>
+          <div class="user-details">
+            <div class="user-name">张伟</div>
+            <div class="user-role">仓库管理员</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="app-container">
+      <div class="analytics-container">
+        <h2 class="section-title">数据统计分析</h2>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">本周入库</div>
+            <div class="stat-value" id="weekly-inbound">0</div>
+            <div class="stat-change positive">
+              <span>↑</span>
+              <span>较上周 +15.3%</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">本周出库</div>
+            <div class="stat-value" id="weekly-outbound">0</div>
+            <div class="stat-change positive">
+              <span>↑</span>
+              <span>较上周 +8.7%</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">库存周转率</div>
+            <div class="stat-value" id="turnover-rate">0%</div>
+            <div class="stat-change negative">
+              <span>↓</span>
+              <span>较上月 -2.1%</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">平均库存天数</div>
+            <div class="stat-value" id="avg-days">0</div>
+            <div class="stat-change positive">
+              <span>↑</span>
+              <span>较上月 +3.2天</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="chart-panel">
+            <div class="chart-header">
+              <h3 class="chart-title">
+                📊 分类库存分布
+              </h3>
+              <select class="filter-select" id="category-period">
+                <option value="week">本周</option>
+                <option value="month" selected>本月</option>
+                <option value="quarter">本季度</option>
+              </select>
+            </div>
+            <div class="chart-body">
+              <div class="bar-chart" id="category-bar-chart">
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-panel">
+            <div class="chart-header">
+              <h3 class="chart-title">
+                🥧 库存占比分析
+              </h3>
+              <button class="btn btn-secondary btn-sm" onclick="Analytics.exportChart('pie')">
+                📥 导出
+              </button>
+            </div>
+            <div class="chart-body">
+              <div class="pie-chart-container">
+                <div class="pie-chart" id="category-pie-chart"></div>
+                <div class="pie-legend" id="pie-legend"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="chart-panel">
+            <div class="chart-header">
+              <h3 class="chart-title">
+                📈 库存趋势分析
+              </h3>
+              <div class="filter-group">
+                <select class="filter-select" id="trend-period">
+                  <option value="7d">最近7天</option>
+                  <option value="30d" selected>最近30天</option>
+                  <option value="90d">最近90天</option>
+                </select>
+              </div>
+            </div>
+            <div class="chart-body">
+              <div class="line-chart-container">
+                <canvas id="trend-line-chart" class="line-chart"></canvas>
+                <div class="chart-tooltip" id="chart-tooltip"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-panel">
+            <div class="chart-header">
+              <h3 class="chart-title">
+                🚀 关键指标趋势
+              </h3>
+            </div>
+            <div class="chart-body">
+              <div class="trend-list">
+                <div class="trend-item">
+                  <div class="trend-icon up">📦</div>
+                  <div class="trend-content">
+                    <div class="trend-title">库存总量</div>
+                    <div class="trend-desc">本月累计库存变化</div>
+                  </div>
+                  <div class="trend-value positive">+12.5%</div>
+                </div>
+
+                <div class="trend-item">
+                  <div class="trend-icon up">✅</div>
+                  <div class="trend-content">
+                    <div class="trend-title">SKU种类</div>
+                    <div class="trend-desc">在售商品种类数</div>
+                  </div>
+                  <div class="trend-value positive">+8</div>
+                </div>
+
+                <div class="trend-item">
+                  <div class="trend-icon down">⚠️</div>
+                  <div class="trend-content">
+                    <div class="trend-title">缺货商品</div>
+                    <div class="trend-desc">需要及时补货</div>
+                  </div>
+                  <div class="trend-value negative">-3</div>
+                </div>
+
+                <div class="trend-item">
+                  <div class="trend-icon up">🏆</div>
+                  <div class="trend-content">
+                    <div class="trend-title">满仓率</div>
+                    <div class="trend-desc">货架使用率</div>
+                  </div>
+                  <div class="trend-value positive">78.5%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-panel">
+          <div class="table-header">
+            <h3 class="chart-title">
+              🏅 高周转商品排行
+            </h3>
+            <select class="filter-select" id="ranking-period">
+              <option value="week">本周</option>
+              <option value="month" selected>本月</option>
+              <option value="quarter">本季度</option>
+            </select>
+          </div>
+          <table class="top-products-table">
+            <thead>
+              <tr>
+                <th>排名</th>
+                <th>SKU编号</th>
+                <th>商品名称</th>
+                <th>分类</th>
+                <th>周转次数</th>
+                <th>库存占比</th>
+              </tr>
+            </thead>
+            <tbody id="top-products-body">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer style="text-align: center; padding: 32px 0; color: var(--text-muted); font-size: 14px;">
+    <p>© 2024 智能仓储管理系统 v1.0 | 技术支持: 仓库技术部</p>
+  </footer>
+
+  <script src="js/utils.js"></script>
+  <script src="js/store.js"></script>
+  <script>
+    const Analytics = {
+      init() {
+        Store.init();
+        this.renderCategoryBarChart();
+        this.renderPieChart();
+        this.renderLineChart();
+        this.renderTopProducts();
+        this.animateStats();
+      },
+
+      renderCategoryBarChart() {
+        const categories = [
+          { key: 'electronics', name: '电子产品', color: '#f59e0b', value: 0 },
+          { key: 'clothing', name: '服装鞋帽', color: '#10b981', value: 0 },
+          { key: 'food', name: '食品饮料', color: '#3b82f6', value: 0 },
+          { key: 'tools', name: '工具五金', color: '#a855f7', value: 0 },
+          { key: 'other', name: '其他商品', color: '#64748b', value: 0 }
+        ];
+
+        Store.inventory.forEach(item => {
+          const cat = categories.find(c => c.key === item.category);
+          if (cat) {
+            cat.value += item.quantity;
+          }
+        });
+
+        const maxValue = Math.max(...categories.map(c => c.value));
+
+        const chartContainer = document.getElementById('category-bar-chart');
+        chartContainer.innerHTML = categories.map((cat, index) => {
+          const height = (cat.value / maxValue) * 200;
+          return `
+            <div class="bar-item" style="animation-delay: ${index * 0.1}s">
+              <div class="bar-value">${Utils.formatNumber(cat.value)}</div>
+              <div class="bar" style="height: ${height}px; background: ${cat.color};" 
+                   data-value="${cat.value}" data-name="${cat.name}"></div>
+              <div class="bar-label">${cat.name}</div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      renderPieChart() {
+        const categories = [
+          { key: 'electronics', name: '电子产品', color: '#f59e0b', value: 0 },
+          { key: 'clothing', name: '服装鞋帽', color: '#10b981', value: 0 },
+          { key: 'food', name: '食品饮料', color: '#3b82f6', value: 0 },
+          { key: 'tools', name: '工具五金', color: '#a855f7', value: 0 },
+          { key: 'other', name: '其他商品', color: '#64748b', value: 0 }
+        ];
+
+        const total = Store.inventory.reduce((sum, item) => sum + item.quantity, 0);
+
+        Store.inventory.forEach(item => {
+          const cat = categories.find(c => c.key === item.category);
+          if (cat) {
+            cat.value += item.quantity;
+          }
+        });
+
+        const legendContainer = document.getElementById('pie-legend');
+        legendContainer.innerHTML = categories.map(cat => {
+          const percentage = total > 0 ? ((cat.value / total) * 100).toFixed(1) : 0;
+          return `
+            <div class="legend-item">
+              <div class="legend-color" style="background: ${cat.color}"></div>
+              <span class="legend-label">${cat.name}</span>
+              <span class="legend-value">${percentage}%</span>
+            </div>
+          `;
+        }).join('');
+      },
+
+      renderLineChart() {
+        const canvas = document.getElementById('trend-line-chart');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = canvas.parentElement.offsetWidth;
+        canvas.height = 250;
+
+        const data = this.generateTrendData(30);
+        const maxValue = Math.max(...data.map(d => d.value));
+        const padding = 40;
+        const chartWidth = canvas.width - padding * 2;
+        const chartHeight = canvas.height - padding * 2;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.strokeStyle = '#2d2d3d';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+          const y = padding + (chartHeight / 4) * i;
+          ctx.beginPath();
+          ctx.moveTo(padding, y);
+          ctx.lineTo(canvas.width - padding, y);
+          ctx.stroke();
+        }
+
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.beginPath();
+        data.forEach((point, index) => {
+          const x = padding + (chartWidth / (data.length - 1)) * index;
+          const y = padding + chartHeight - (point.value / maxValue) * chartHeight;
+
+          if (index === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        });
+        ctx.stroke();
+
+        const gradient = ctx.createLinearGradient(0, padding, 0, canvas.height - padding);
+        gradient.addColorStop(0, 'rgba(245, 158, 11, 0.3)');
+        gradient.addColorStop(1, 'rgba(245, 158, 11, 0)');
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        data.forEach((point, index) => {
+          const x = padding + (chartWidth / (data.length - 1)) * index;
+          const y = padding + chartHeight - (point.value / maxValue) * chartHeight;
+
+          if (index === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        });
+        ctx.lineTo(padding + chartWidth, canvas.height - padding);
+        ctx.lineTo(padding, canvas.height - padding);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#f59e0b';
+        data.forEach((point, index) => {
+          if (index % 5 === 0) {
+            const x = padding + (chartWidth / (data.length - 1)) * index;
+            const y = padding + chartHeight - (point.value / maxValue) * chartHeight;
+
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px JetBrains Mono';
+        ctx.textAlign = 'center';
+
+        const labels = ['1日', '7日', '14日', '21日', '30日'];
+        labels.forEach((label, index) => {
+          const x = padding + (chartWidth / 4) * index;
+          ctx.fillText(label, x, canvas.height - 10);
+        });
+      },
+
+      generateTrendData(days) {
+        const data = [];
+        let value = 5000;
+
+        for (let i = 0; i < days; i++) {
+          const change = (Math.random() - 0.4) * 500;
+          value = Math.max(2000, Math.min(10000, value + change));
+          data.push({
+            day: i + 1,
+            value: Math.round(value)
+          });
+        }
+
+        return data;
+      },
+
+      renderTopProducts() {
+        const products = [...Store.inventory]
+          .sort((a, b) => b.quantity - a.quantity)
+          .slice(0, 10);
+
+        const total = products.reduce((sum, p) => sum + p.quantity, 0);
+        const maxQuantity = products[0]?.quantity || 1;
+
+        const tbody = document.getElementById('top-products-body');
+        tbody.innerHTML = products.map((product, index) => {
+          const rankClass = index === 0 ? 'gold' : 
+                           index === 1 ? 'silver' : 
+                           index === 2 ? 'bronze' : 'normal';
+          const percentage = ((product.quantity / total) * 100).toFixed(1);
+          const progressWidth = (product.quantity / maxQuantity) * 100;
+
+          return `
+            <tr>
+              <td><span class="rank-badge ${rankClass}">${index + 1}</span></td>
+              <td class="sku-cell">${product.sku}</td>
+              <td>${product.name}</td>
+              <td>
+                <span class="category-badge ${product.category}">
+                  ${Utils.getCategoryName(product.category)}
+                </span>
+              </td>
+              <td>
+                <strong style="color: var(--primary)">${Math.floor(Math.random() * 50) + 10}</strong> 次
+              </td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progressWidth}%; background: linear-gradient(90deg, var(--primary), var(--success));"></div>
+                  </div>
+                  <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px;">${percentage}%</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      },
+
+      animateStats() {
+        const metrics = Store.getMetrics();
+
+        Utils.animateValue(document.getElementById('weekly-inbound'), 0, metrics.pendingInbound * 15, 1000);
+        Utils.animateValue(document.getElementById('weekly-outbound'), 0, metrics.pendingOutbound * 20, 1000);
+
+        const turnoverRate = ((metrics.pendingOutbound / metrics.inStock) * 100).toFixed(1);
+        document.getElementById('turnover-rate').textContent = turnoverRate + '%';
+
+        const avgDays = Math.floor(metrics.total / (metrics.pendingOutbound || 1));
+        Utils.animateValue(document.getElementById('avg-days'), 0, avgDays, 1000);
+      },
+
+      exportChart(type) {
+        Utils.showNotification(`正在导出 ${type === 'pie' ? '饼图' : '图表'} 数据...`, 'info');
+        setTimeout(() => {
+          Utils.showNotification('图表导出成功！', 'success');
+        }, 1000);
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      Analytics.init();
+
+      window.addEventListener('resize', () => {
+        Analytics.renderLineChart();
+      });
+    });
+  </script>
+</body>
+</html>

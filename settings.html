@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>系统设置 - 智能仓储系统</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .settings-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 32px;
+    }
+
+    .settings-nav {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+    }
+
+    .settings-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .settings-nav-item:hover {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+    }
+
+    .settings-nav-item.active {
+      background: var(--primary);
+      color: var(--bg-dark);
+    }
+
+    .settings-nav-item .icon {
+      font-size: 18px;
+    }
+
+    .settings-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .settings-section {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .settings-section-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .settings-section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .settings-section-body {
+      padding: 24px;
+    }
+
+    .setting-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+
+    .setting-info {
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .setting-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .setting-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .setting-control {
+      flex-shrink: 0;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      background: var(--bg-surface);
+      border-radius: 13px;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 2px solid var(--border-color);
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+
+    .toggle-switch.active {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .toggle-switch.active::after {
+      left: 24px;
+      background: var(--bg-dark);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .input-field {
+      width: 200px;
+      padding: 10px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .color-picker {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .color-option {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 3px solid transparent;
+    }
+
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+
+    .color-option.selected {
+      border-color: var(--text-primary);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .info-item {
+      padding: 16px;
+      background: var(--bg-surface);
+      border-radius: 8px;
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .action-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .action-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: var(--bg-surface);
+      border-radius: 8px;
+      transition: var(--transition);
+    }
+
+    .action-item:hover {
+      background: rgba(245, 158, 11, 0.05);
+    }
+
+    .action-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .action-icon {
+      font-size: 24px;
+    }
+
+    .action-text {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .danger-zone {
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .danger-zone .settings-section-header {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    .danger-zone .settings-section-title {
+      color: var(--warning);
+    }
+
+    .user-avatar-large {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, #d97706 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 700;
+      margin: 0 auto 16px;
+    }
+
+    .profile-card {
+      text-align: center;
+      padding: 32px;
+      background: var(--bg-surface);
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .profile-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .profile-role {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .settings-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-nav {
+        position: static;
+        display: flex;
+        overflow-x: auto;
+        gap: 8px;
+        padding: 12px;
+      }
+
+      .settings-nav-item {
+        flex-shrink: 0;
+        margin-bottom: 0;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .setting-item {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .input-group {
+        width: 100%;
+      }
+
+      .input-field {
+        width: 100%;
+      }
+    }
+
+    .notification-preview {
+      background: var(--bg-surface);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .notification-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-card);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .notification-icon {
+      font-size: 20px;
+    }
+
+    .notification-text {
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="app-container">
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-icon">🏭</div>
+          <span class="logo-text">Smart Warehouse</span>
+        </div>
+
+        <nav>
+          <ul class="nav-menu">
+            <li><a class="nav-item" href="index.html" data-page="dashboard">仪表盘</a></li>
+            <li><a class="nav-item" href="index.html" data-page="inventory">库存管理</a></li>
+            <li><a class="nav-item" href="analytics.html" data-page="analytics">数据分析</a></li>
+            <li><a class="nav-item active" data-page="settings">系统设置</a></li>
+          </ul>
+        </nav>
+
+        <div class="user-info">
+          <div class="user-avatar">张</div>
+          <div class="user-details">
+            <div class="user-name">张伟</div>
+            <div class="user-role">仓库管理员</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="settings-container">
+      <h2 class="section-title">系统设置</h2>
+
+      <div class="settings-grid">
+        <nav class="settings-nav">
+          <div class="settings-nav-item active" data-section="profile">
+            <span class="icon">👤</span>
+            <span>个人信息</span>
+          </div>
+          <div class="settings-nav-item" data-section="notifications">
+            <span class="icon">🔔</span>
+            <span>通知设置</span>
+          </div>
+          <div class="settings-nav-item" data-section="display">
+            <span class="icon">🎨</span>
+            <span>显示设置</span>
+          </div>
+          <div class="settings-nav-item" data-section="data">
+            <span class="icon">💾</span>
+            <span>数据管理</span>
+          </div>
+          <div class="settings-nav-item" data-section="system">
+            <span class="icon">⚙️</span>
+            <span>系统信息</span>
+          </div>
+          <div class="settings-nav-item danger" data-section="danger">
+            <span class="icon">⚠️</span>
+            <span>危险区域</span>
+          </div>
+        </nav>
+
+        <div class="settings-content">
+          <div class="settings-section" id="section-profile">
+            <div class="settings-section-header">
+              <h3 class="settings-section-title">
+                👤 个人信息
+              </h3>
+            </div>
+            <div class="settings-section-body">
+              <div class="profile-card">
+                <div class="user-avatar-large">张</div>
+                <div class="profile-name">张伟</div>
+                <div class="profile-role">仓库管理员</div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">用户名</div>
+                  <div class="setting-desc">系统登录使用的用户名</div>
+                </div>
+                <div class="setting-control">
+                  <input type="text" class="input-field" value="zhangwei" readonly>
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">显示名称</div>
+                  <div class="setting-desc">在系统中显示的名称</div>
+                </div>
+                <div class="setting-control">
+                  <input type="text" class="input-field" value="张伟">
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">邮箱</div>
+                  <div class="setting-desc">用于接收系统通知</div>
+                </div>
+                <div class="setting-control">
+                  <input type="email" class="input-field" value="zhangwei@warehouse.cn">
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">联系电话</div>
+                  <div class="setting-desc">紧急情况联系方式</div>
+                </div>
+                <div class="setting-control">
+                  <input type="tel" class="input-field" value="138****8888">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" id="section-notifications">
+            <div class="settings-section-header">
+              <h3 class="settings-section-title">
+                🔔 通知设置
+              </h3>
+            </div>
+            <div class="settings-section-body">
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">库存预警通知</div>
+                  <div class="setting-desc">当商品库存低于最低库存时发送通知</div>
+                </div>
+                <div class="setting-control">
+                  <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">入库/出库通知</div>
+                  <div class="setting-desc">记录入库和出库操作时发送通知</div>
+                </div>
+                <div class="setting-control">
+                  <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">系统消息</div>
+                  <div class="setting-desc">接收系统更新和维护通知</div>
+                </div>
+                <div class="setting-control">
+                  <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">邮件通知</div>
+                  <div class="setting-desc">通过邮件接收重要通知</div>
+                </div>
+                <div class="setting-control">
+                  <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                </div>
+              </div>
+
+              <div class="notification-preview">
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">预览效果</div>
+                <div class="notification-item">
+                  <span class="notification-icon">⚠️</span>
+                  <span class="notification-text">iPhone 15 Pro 库存不足，当前库存 15 件</span>
+                </div>
+                <div class="notification-item">
+                  <span class="notification-icon">📥</span>
+                  <span class="notification-text">新入库商品：MacBook Air × 50 件</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" id="section-display">
+            <div class="settings-section-header">
+              <h3 class="settings-section-title">
+                🎨 显示设置
+              </h3>
+            </div>
+            <div class="settings-section-body">
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">主题颜色</div>
+                  <div class="setting-desc">选择系统界面的主题色</div>
+                </div>
+                <div class="setting-control">
+                  <div class="color-picker">
+                    <div class="color-option selected" style="background: #f59e0b;" title="琥珀橙"></div>
+                    <div class="color-option" style="background: #3b82f6;" title="科技蓝"></div>
+                    <div class="color-option" style="background: #10b981;" title="翡翠绿"></div>
+                    <div class="color-option" style="background: #8b5cf6;" title="梦幻紫"></div>
+                    <div class="color-option" style="background: #ef4444;" title="烈焰红"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">深色模式</div>
+                  <div class="setting-desc">使用深色主题减少眼睛疲劳</div>
+                </div>
+                <div class="setting-control">
+                  <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">紧凑模式</div>
+                  <div class="setting-desc">减少界面元素间距，显示更多内容</div>
+                </div>
+                <div class="setting-control">
+                  <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">动画效果</div>
+                  <div class="setting-desc">启用界面动画和过渡效果</div>
+                </div>
+                <div class="setting-control">
+                  <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                </div>
+              </div>
+
+              <div class="setting-item">
+                <div class="setting-info">
+                  <div class="setting-label">每页显示条数</div>
+                  <div class="setting-desc">列表页面每页显示的记录数量</div>
+                </div>
+                <div class="setting-control">
+                  <select class="filter-select">
+                    <option value="10">10 条</option>
+                    <option value="20" selected>20 条</option>
+                    <option value="50">50 条</option>
+                    <option value="100">100 条</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" id="section-data">
+            <div class="settings-section-header">
+              <h3 class="settings-section-title">
+                💾 数据管理
+              </h3>
+            </div>
+            <div class="settings-section-body">
+              <div class="action-list">
+                <div class="action-item">
+                  <div class="action-info">
+                    <span class="action-icon">📤</span>
+                    <span class="action-text">导出所有数据为 JSON 文件</span>
+                  </div>
+                  <button class="btn btn-secondary" onclick="Settings.exportData()">导出</button>
+                </div>
+
+                <div class="action-item">
+                  <div class="action-info">
+                    <span class="action-icon">📥</span>
+                    <span class="action-text">从 JSON 文件导入数据</span>
+                  </div>
+                  <button class="btn btn-secondary">导入</button>
+                </div>
+
+                <div class="action-item">
+                  <div class="action-info">
+                    <span class="action-icon">🔄</span>
+                    <span class="action-text">重置为示例数据</span>
+                  </div>
+                  <button class="btn btn-secondary" onclick="Settings.resetData()">重置</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section" id="section-system">
+            <div class="settings-section-header">
+              <h3 class="settings-section-title">
+                ⚙️ 系统信息
+              </h3>
+            </div>
+            <div class="settings-section-body">
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">系统版本</div>
+                  <div class="info-value">v1.0.0</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">构建日期</div>
+                  <div class="info-value">2024-01-15</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">数据存储</div>
+                  <div class="info-value">LocalStorage</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">前端框架</div>
+                  <div class="info-value">原生 JavaScript</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">库存记录数</div>
+                  <div class="info-value" id="inventory-count">0</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">活动记录数</div>
+                  <div class="info-value" id="activity-count">0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section danger-zone" id="section-danger">
+            <div class="settings-section-header">
+              <h3 class="settings-section-title">
+                ⚠️ 危险区域
+              </h3>
+            </div>
+            <div class="settings-section-body">
+              <div class="action-list">
+                <div class="action-item">
+                  <div class="action-info">
+                    <span class="action-icon">🗑️</span>
+                    <span class="action-text">清除所有库存数据</span>
+                  </div>
+                  <button class="btn btn-danger" style="background: var(--warning);" onclick="Settings.clearInventory()">
+                    清除
+                  </button>
+                </div>
+
+                <div class="action-item">
+                  <div class="action-info">
+                    <span class="action-icon">📋</span>
+                    <span class="action-text">清除所有活动日志</span>
+                  </div>
+                  <button class="btn btn-danger" style="background: var(--warning);" onclick="Settings.clearActivities()">
+                    清除
+                  </button>
+                </div>
+
+                <div class="action-item">
+                  <div class="action-info">
+                    <span class="action-icon">💥</span>
+                    <span class="action-text">清除所有数据（不可恢复）</span>
+                  </div>
+                  <button class="btn btn-danger" style="background: #dc2626;" onclick="Settings.clearAll()">
+                    清除全部
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer style="text-align: center; padding: 32px 0; color: var(--text-muted); font-size: 14px;">
+    <p>© 2024 智能仓储管理系统 v1.0 | 技术支持: 仓库技术部</p>
+  </footer>
+
+  <script src="js/utils.js"></script>
+  <script src="js/store.js"></script>
+  <script>
+    const Settings = {
+      init() {
+        Store.init();
+        this.renderStats();
+        this.bindEvents();
+      },
+
+      renderStats() {
+        document.getElementById('inventory-count').textContent = Store.inventory.length;
+        document.getElementById('activity-count').textContent = Store.activities.length;
+      },
+
+      bindEvents() {
+        const navItems = document.querySelectorAll('.settings-nav-item');
+        navItems.forEach(item => {
+          item.addEventListener('click', () => {
+            navItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            const section = item.dataset.section;
+            this.scrollToSection(`section-${section}`);
+          });
+        });
+
+        const colorOptions = document.querySelectorAll('.color-option');
+        colorOptions.forEach(option => {
+          option.addEventListener('click', () => {
+            colorOptions.forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            Utils.showNotification('主题颜色已更新', 'success');
+          });
+        });
+      },
+
+      scrollToSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      },
+
+      exportData() {
+        const data = {
+          inventory: Store.inventory,
+          activities: Store.activities,
+          exportTime: new Date().toISOString()
+        };
+
+        Utils.downloadJSON(data, `warehouse_backup_${new Date().toISOString().split('T')[0]}.json`);
+        Utils.showNotification('数据导出成功！', 'success');
+      },
+
+      resetData() {
+        if (confirm('确定要重置为示例数据吗？这将清除所有当前数据。')) {
+          localStorage.removeItem('inventory');
+          localStorage.removeItem('activities');
+          Store.inventory = Store.generateInitialInventory();
+          Store.activities = Store.generateInitialActivities();
+          Store.saveInventory();
+          Store.saveActivities();
+          this.renderStats();
+          Utils.showNotification('数据已重置为示例数据', 'success');
+        }
+      },
+
+      clearInventory() {
+        if (confirm('确定要清除所有库存数据吗？')) {
+          Store.inventory = [];
+          Store.saveInventory();
+          this.renderStats();
+          Utils.showNotification('库存数据已清除', 'success');
+        }
+      },
+
+      clearActivities() {
+        if (confirm('确定要清除所有活动日志吗？')) {
+          Store.activities = [];
+          Store.saveActivities();
+          this.renderStats();
+          Utils.showNotification('活动日志已清除', 'success');
+        }
+      },
+
+      clearAll() {
+        if (confirm('确定要清除所有数据吗？此操作不可撤销！')) {
+          if (confirm('这是最后一次确认，点击确定将清除所有数据。')) {
+            localStorage.removeItem('inventory');
+            localStorage.removeItem('activities');
+            Store.inventory = [];
+            Store.activities = [];
+            this.renderStats();
+            Utils.showNotification('所有数据已清除', 'success');
+          }
+        }
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      Settings.init();
+    });
+  </script>
+</body>
+</html>
