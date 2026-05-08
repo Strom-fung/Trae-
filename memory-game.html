@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记忆翻牌游戏</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: #fff;
+            text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 1rem;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .stat-icon {
+            font-size: 1.5rem;
+        }
+
+        .stat-value {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+            perspective: 1000px;
+        }
+
+        .card {
+            aspect-ratio: 1;
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.4s ease-in-out;
+        }
+
+        .card:hover:not(.flipped):not(.matched) {
+            transform: translateY(-4px);
+        }
+
+        .card:hover:not(.flipped):not(.matched) .card-back {
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card.matched {
+            animation: matchPop 0.5s ease-out forwards;
+        }
+
+        @keyframes matchPop {
+            0% { transform: rotateY(180deg) scale(1); opacity: 1; }
+            50% { transform: rotateY(180deg) scale(1.2) rotate(10deg); opacity: 0.8; }
+            100% { transform: rotateY(180deg) scale(0) rotate(180deg); opacity: 0; }
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+        }
+
+        .card-back {
+            background: linear-gradient(145deg, #5a67d8, #4c51bf);
+            border: 3px solid rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-back::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .card-back-icon {
+            font-size: 2rem;
+            color: rgba(255,255,255,0.6);
+            z-index: 1;
+        }
+
+        .card-front {
+            background: #fff;
+            transform: rotateY(180deg);
+            border: 3px solid #e2e8f0;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 1.1rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(72,187,120,0.4);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(72,187,120,0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: linear-gradient(145deg, #ffffff, #f7fafc);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            max-width: 360px;
+            width: 90%;
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .modal-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            color: #718096;
+            margin-bottom: 24px;
+        }
+
+        .modal-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 28px;
+        }
+
+        .modal-stat {
+            text-align: center;
+        }
+
+        .modal-stat-value {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: #48bb78;
+            line-height: 1;
+        }
+
+        .modal-stat-label {
+            font-size: 0.85rem;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 480px) {
+            .title { font-size: 1.8rem; }
+            .stats-panel { gap: 16px; }
+            .stat-item { padding: 10px 16px; }
+            .stat-value { font-size: 1.2rem; }
+            .game-board { gap: 8px; }
+            .card-face { font-size: 2rem; border-radius: 12px; }
+            .card-back-icon { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header class="header">
+            <h1 class="title">记忆翻牌</h1>
+            <p class="subtitle">找出所有配对的卡片吧！</p>
+        </header>
+
+        <div class="stats-panel">
+            <div class="stat-item">
+                <span class="stat-icon">⭐</span>
+                <div>
+                    <div class="stat-value" id="score">0</div>
+                    <div class="stat-label">分数</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-icon">⏱️</span>
+                <div>
+                    <div class="stat-value" id="timer">00:00</div>
+                    <div class="stat-label">用时</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-board" id="gameBoard"></div>
+
+        <button class="btn" id="restartBtn">重新开始</button>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-icon">🎉</div>
+            <h2 class="modal-title">恭喜通关！</h2>
+            <p class="modal-subtitle">你找到了所有配对！</p>
+            <div class="modal-stats">
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="finalScore">0</div>
+                    <div class="modal-stat-label">最终分数</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="finalTime">00:00</div>
+                    <div class="modal-stat-label">总用时</div>
+                </div>
+            </div>
+            <button class="btn" id="playAgainBtn">再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        const EMOJIS = ['🐶', '🐱', '🐼', '🐨', '🦊', '🦁', '🐸', '🐵'];
+        const POINTS_PER_MATCH = 100;
+
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let score = 0;
+        let timerInterval = null;
+        let seconds = 0;
+        let isLocked = false;
+
+        const gameBoard = document.getElementById('gameBoard');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const finalTimeDisplay = document.getElementById('finalTime');
+        const restartBtn = document.getElementById('restartBtn');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function formatTime(secs) {
+            const mins = Math.floor(secs / 60);
+            const s = secs % 60;
+            return `${String(mins).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            seconds = 0;
+            timerDisplay.textContent = formatTime(seconds);
+            timerInterval = setInterval(() => {
+                seconds++;
+                timerDisplay.textContent = formatTime(seconds);
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function createCard(emoji, index) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.index = index;
+            card.dataset.emoji = emoji;
+            card.innerHTML = `
+                <div class="card-face card-back">
+                    <span class="card-back-icon">❓</span>
+                </div>
+                <div class="card-face card-front">${emoji}</div>
+            `;
+            card.addEventListener('click', () => handleCardClick(card));
+            return card;
+        }
+
+        function handleCardClick(card) {
+            if (isLocked) return;
+            if (card.classList.contains('flipped')) return;
+            if (card.classList.contains('matched')) return;
+            if (flippedCards.length >= 2) return;
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                isLocked = true;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const match = card1.dataset.emoji === card2.dataset.emoji;
+
+            if (match) {
+                handleMatch(card1, card2);
+            } else {
+                handleMismatch(card1, card2);
+            }
+        }
+
+        function handleMatch(card1, card2) {
+            score += POINTS_PER_MATCH;
+            scoreDisplay.textContent = score;
+            matchedPairs++;
+
+            setTimeout(() => {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                flippedCards = [];
+                isLocked = false;
+
+                if (matchedPairs === EMOJIS.length) {
+                    setTimeout(showVictory, 600);
+                }
+            }, 300);
+        }
+
+        function handleMismatch(card1, card2) {
+            setTimeout(() => {
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+                flippedCards = [];
+                isLocked = false;
+            }, 1000);
+        }
+
+        function showVictory() {
+            stopTimer();
+            finalScoreDisplay.textContent = score;
+            finalTimeDisplay.textContent = formatTime(seconds);
+            modalOverlay.classList.add('active');
+        }
+
+        function hideModal() {
+            modalOverlay.classList.remove('active');
+        }
+
+        function initGame() {
+            hideModal();
+            stopTimer();
+            gameBoard.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            score = 0;
+            isLocked = false;
+            scoreDisplay.textContent = '0';
+            timerDisplay.textContent = '00:00';
+
+            const cardPairs = [...EMOJIS, ...EMOJIS];
+            cards = shuffle(cardPairs);
+
+            cards.forEach((emoji, index) => {
+                const card = createCard(emoji, index);
+                gameBoard.appendChild(card);
+            });
+
+            setTimeout(startTimer, 500);
+        }
+
+        restartBtn.addEventListener('click', initGame);
+        playAgainBtn.addEventListener('click', initGame);
+
+        initGame();
+    </script>
+</body>
+</html>
