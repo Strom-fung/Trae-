@@ -47,6 +47,39 @@
             font-size: 1rem;
         }
 
+        .level-select {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .level-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .level-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .level-btn.active {
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            border-color: #fff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
         .stats-panel {
             display: flex;
             justify-content: center;
@@ -83,12 +116,37 @@
             letter-spacing: 1px;
         }
 
+        .game-info {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .level-badge {
+            background: linear-gradient(145deg, #f6ad55, #ed8936);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-family: 'Fredoka One', cursive;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(246,173,85,0.4);
+        }
+
+        .pairs-left {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
         .game-board {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
             gap: 12px;
             margin-bottom: 24px;
             perspective: 1000px;
+            justify-content: center;
         }
 
         .card {
@@ -193,6 +251,15 @@
             transform: translateY(0) scale(0.98);
         }
 
+        .btn-secondary {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 28px rgba(102,126,234,0.5);
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -220,7 +287,7 @@
             border-radius: 24px;
             padding: 40px;
             text-align: center;
-            max-width: 360px;
+            max-width: 400px;
             width: 90%;
             transform: scale(0.8) translateY(20px);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -280,6 +347,19 @@
             margin-top: 4px;
         }
 
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-buttons .btn {
+            margin: 0;
+            padding: 12px 28px;
+            font-size: 1rem;
+        }
+
         @media (max-width: 480px) {
             .title { font-size: 1.8rem; }
             .stats-panel { gap: 16px; }
@@ -288,6 +368,7 @@
             .game-board { gap: 8px; }
             .card-face { font-size: 2rem; border-radius: 12px; }
             .card-back-icon { font-size: 1.5rem; }
+            .level-btn { padding: 8px 14px; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -297,6 +378,14 @@
             <h1 class="title">记忆翻牌</h1>
             <p class="subtitle">找出所有配对的卡片吧！</p>
         </header>
+
+        <div class="level-select" id="levelSelect">
+            <button class="level-btn active" data-level="1">关卡 1<br><small>4张牌</small></button>
+            <button class="level-btn" data-level="2">关卡 2<br><small>6张牌</small></button>
+            <button class="level-btn" data-level="3">关卡 3<br><small>8张牌</small></button>
+            <button class="level-btn" data-level="4">关卡 4<br><small>12张牌</small></button>
+            <button class="level-btn" data-level="5">关卡 5<br><small>16张牌</small></button>
+        </div>
 
         <div class="stats-panel">
             <div class="stat-item">
@@ -315,6 +404,11 @@
             </div>
         </div>
 
+        <div class="game-info">
+            <span class="level-badge" id="levelBadge">第 1 关</span>
+            <span class="pairs-left" id="pairsLeft">剩余 2 对</span>
+        </div>
+
         <div class="game-board" id="gameBoard"></div>
 
         <button class="btn" id="restartBtn">重新开始</button>
@@ -322,31 +416,52 @@
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
-            <div class="modal-icon">🎉</div>
-            <h2 class="modal-title">恭喜通关！</h2>
-            <p class="modal-subtitle">你找到了所有配对！</p>
+            <div class="modal-icon" id="modalIcon">🎉</div>
+            <h2 class="modal-title" id="modalTitle">恭喜过关！</h2>
+            <p class="modal-subtitle" id="modalSubtitle">太棒了！继续挑战下一关！</p>
             <div class="modal-stats">
                 <div class="modal-stat">
                     <div class="modal-stat-value" id="finalScore">0</div>
-                    <div class="modal-stat-label">最终分数</div>
+                    <div class="modal-stat-label">本关得分</div>
                 </div>
                 <div class="modal-stat">
                     <div class="modal-stat-value" id="finalTime">00:00</div>
-                    <div class="modal-stat-label">总用时</div>
+                    <div class="modal-stat-label">用时</div>
                 </div>
             </div>
-            <button class="btn" id="playAgainBtn">再玩一次</button>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" id="selectLevelBtn">选择关卡</button>
+                <button class="btn" id="nextLevelBtn">下一关</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const EMOJIS = ['🐶', '🐱', '🐼', '🐨', '🦊', '🦁', '🐸', '🐵'];
+        const EMOJI_SETS = [
+            ['🐶', '🐱'],
+            ['🐶', '🐱', '🐼'],
+            ['🐶', '🐱', '🐼', '🐨'],
+            ['🐶', '🐱', '🐼', '🐨', '🦊', '🦁'],
+            ['🐶', '🐱', '🐼', '🐨', '🦊', '🦁', '🐸', '🐵']
+        ];
+
+        const LEVEL_CONFIG = [
+            { cols: 2, bonus: 200 },
+            { cols: 3, bonus: 300 },
+            { cols: 4, bonus: 400 },
+            { cols: 4, bonus: 500 },
+            { cols: 4, bonus: 800 }
+        ];
+
         const POINTS_PER_MATCH = 100;
 
+        let currentLevel = 1;
         let cards = [];
         let flippedCards = [];
         let matchedPairs = 0;
+        let totalPairs = 0;
         let score = 0;
+        let levelScore = 0;
         let timerInterval = null;
         let seconds = 0;
         let isLocked = false;
@@ -354,11 +469,18 @@
         const gameBoard = document.getElementById('gameBoard');
         const scoreDisplay = document.getElementById('score');
         const timerDisplay = document.getElementById('timer');
+        const levelBadge = document.getElementById('levelBadge');
+        const pairsLeft = document.getElementById('pairsLeft');
         const modalOverlay = document.getElementById('modalOverlay');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalSubtitle = document.getElementById('modalSubtitle');
         const finalScoreDisplay = document.getElementById('finalScore');
         const finalTimeDisplay = document.getElementById('finalTime');
         const restartBtn = document.getElementById('restartBtn');
-        const playAgainBtn = document.getElementById('playAgainBtn');
+        const nextLevelBtn = document.getElementById('nextLevelBtn');
+        const selectLevelBtn = document.getElementById('selectLevelBtn');
+        const levelSelect = document.getElementById('levelSelect');
 
         function shuffle(array) {
             const arr = [...array];
@@ -394,6 +516,8 @@
             card.className = 'card';
             card.dataset.index = index;
             card.dataset.emoji = emoji;
+            const cardSize = currentLevel <= 2 ? '80px' : currentLevel <= 4 ? '70px' : '60px';
+            card.style.width = cardSize;
             card.innerHTML = `
                 <div class="card-face card-back">
                     <span class="card-back-icon">❓</span>
@@ -431,9 +555,12 @@
         }
 
         function handleMatch(card1, card2) {
-            score += POINTS_PER_MATCH;
+            const points = POINTS_PER_MATCH + (currentLevel * 20);
+            score += points;
+            levelScore += points;
             scoreDisplay.textContent = score;
             matchedPairs++;
+            pairsLeft.textContent = `剩余 ${totalPairs - matchedPairs} 对`;
 
             setTimeout(() => {
                 card1.classList.add('matched');
@@ -441,7 +568,7 @@
                 flippedCards = [];
                 isLocked = false;
 
-                if (matchedPairs === EMOJIS.length) {
+                if (matchedPairs === totalPairs) {
                     setTimeout(showVictory, 600);
                 }
             }, 300);
@@ -458,8 +585,25 @@
 
         function showVictory() {
             stopTimer();
-            finalScoreDisplay.textContent = score;
+            const levelBonus = LEVEL_CONFIG[currentLevel - 1].bonus;
+            score += levelBonus;
+            levelScore += levelBonus;
+            scoreDisplay.textContent = score;
+            finalScoreDisplay.textContent = levelScore;
             finalTimeDisplay.textContent = formatTime(seconds);
+
+            if (currentLevel === 5) {
+                modalIcon.textContent = '🏆';
+                modalTitle.textContent = '全部通关！';
+                modalSubtitle.textContent = '你是记忆大师！总分 ' + score + ' 分！';
+                nextLevelBtn.style.display = 'none';
+            } else {
+                modalIcon.textContent = '🎉';
+                modalTitle.textContent = '恭喜过关！';
+                modalSubtitle.textContent = '太棒了！继续挑战下一关！';
+                nextLevelBtn.style.display = 'inline-block';
+            }
+
             modalOverlay.classList.add('active');
         }
 
@@ -467,18 +611,33 @@
             modalOverlay.classList.remove('active');
         }
 
-        function initGame() {
+        function updateLevelButtons() {
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.level) === currentLevel);
+            });
+        }
+
+        function initGame(level = currentLevel) {
+            currentLevel = level;
             hideModal();
             stopTimer();
             gameBoard.innerHTML = '';
             flippedCards = [];
             matchedPairs = 0;
-            score = 0;
+            levelScore = 0;
             isLocked = false;
-            scoreDisplay.textContent = '0';
             timerDisplay.textContent = '00:00';
 
-            const cardPairs = [...EMOJIS, ...EMOJIS];
+            const emojis = EMOJI_SETS[level - 1];
+            totalPairs = emojis.length;
+            const cols = LEVEL_CONFIG[level - 1].cols;
+
+            gameBoard.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            levelBadge.textContent = `第 ${level} 关`;
+            pairsLeft.textContent = `剩余 ${totalPairs} 对`;
+            updateLevelButtons();
+
+            const cardPairs = [...emojis, ...emojis];
             cards = shuffle(cardPairs);
 
             cards.forEach((emoji, index) => {
@@ -489,10 +648,24 @@
             setTimeout(startTimer, 500);
         }
 
-        restartBtn.addEventListener('click', initGame);
-        playAgainBtn.addEventListener('click', initGame);
+        restartBtn.addEventListener('click', () => initGame(currentLevel));
+        nextLevelBtn.addEventListener('click', () => {
+            if (currentLevel < 5) {
+                initGame(currentLevel + 1);
+            }
+        });
+        selectLevelBtn.addEventListener('click', () => {
+            hideModal();
+        });
 
-        initGame();
+        levelSelect.addEventListener('click', (e) => {
+            const btn = e.target.closest('.level-btn');
+            if (btn) {
+                initGame(parseInt(btn.dataset.level));
+            }
+        });
+
+        initGame(1);
     </script>
 </body>
 </html>
